@@ -5,7 +5,9 @@ import { LineChart, Line, BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, L
 // HELPER FUNCTIONS
 // ============================================================================
 
-const CHURN_ANNUAL_TO_MONTHLY = (annualRate) => annualRate / 12;
+// Deterministic monthly churn from annual rate
+const annualToMonthlyChurn = (a: number): number => 1 - Math.pow(1 - a, 1 / 12);
+const CHURN_ANNUAL_TO_MONTHLY = (annualRate: number): number => annualToMonthlyChurn(annualRate);
 
 const distributeClients = (total, planMix) => {
   if (total === 0) return { starter: 0, growth: 0, scale: 0 };
@@ -46,12 +48,35 @@ const getSeasonalityMultiplier = (month, enableSeasonality) => {
   return seasonality[month % 12];
 };
 
-// NEW: Add randomness/variance
-const applyVariance = (value, variancePercent, enableVariance) => {
+// Deterministic seeded jitter helpers
+const seeded = (seed: string, i: number): number => {
+  let h = 2166136261 ^ i;
+  for (const c of seed) {
+    h ^= c.charCodeAt(0);
+    h = Math.imul(h, 16777619);
+  }
+  h ^= h >>> 13;
+  h = Math.imul(h, 1274126177);
+  h ^= h >>> 16;
+  return (h >>> 0) / 4294967295;
+};
+const jitter = (seed: string, i: number, pct: number, diligenceMode: boolean): number => {
+  if (diligenceMode) return 1; // deterministic: no noise
+  const r = seeded(seed, i) * 2 - 1;
+  return 1 + r * pct; // multiplicative jitter
+};
+// Variance application using seeded jitter
+const applyVariance = (
+  value: number,
+  variancePercent: number,
+  enableVariance: boolean,
+  seed: string,
+  i: number,
+  diligenceMode: boolean
+): number => {
   if (!enableVariance) return value;
-  const variance = value * (variancePercent / 100);
-  const random = (Math.random() - 0.5) * 2; // -1 to 1
-  return value + (variance * random);
+  const factor = jitter(seed, i, variancePercent / 100, diligenceMode);
+  return value * factor;
 };
 
 // ============================================================================
@@ -277,6 +302,7 @@ const initialState = {
   enableSeasonality: false,
   enableVariance: false,
   variancePercent: 10,
+  diligenceMode: true,
   showActuals: false,
   actuals: {}
 };
@@ -307,6 +333,8 @@ function modelReducer(state, action) {
       return { ...state, enableVariance: !state.enableVariance };
     case 'SET_VARIANCE_PERCENT':
       return { ...state, variancePercent: Math.max(0, Math.min(100, action.payload)) };
+    case 'TOGGLE_DILIGENCE_MODE':
+      return { ...state, diligenceMode: !state.diligenceMode };
     case 'TOGGLE_ACTUALS':
       return { ...state, showActuals: !state.showActuals };
     case 'UPDATE_SCENARIO':
@@ -355,8 +383,9 @@ function calculateProjections(state, scenarioData) {
     const baseNewPro = totalUsers * scenarioData.proConversion * (1 / 12);
     const baseNewPlus = totalUsers * scenarioData.plusConversion * (1 / 12);
     
-    const newPro = Math.round(applyVariance(baseNewPro, state.variancePercent, state.enableVariance));
-    const newPlus = Math.round(applyVariance(baseNewPlus, state.variancePercent, state.enableVariance));
+    const varianceSeed = `${state.selectedScenario}-memberships`;
+    const newPro = Math.round(applyVariance(baseNewPro, state.variancePercent, state.enableVariance, varianceSeed, month * 2 + 0, state.diligenceMode));
+    const newPlus = Math.round(applyVariance(baseNewPlus, state.variancePercent, state.enableVariance, varianceSeed, month * 2 + 1, state.diligenceMode));
     
     proPaid = Math.round((proPaid * (1 - monthlyChurnRate)) + newPro);
     plusPaid = Math.round((plusPaid * (1 - monthlyChurnRate)) + newPlus);
@@ -364,7 +393,8 @@ function calculateProjections(state, scenarioData) {
     
     // === B2B SAAS ===
     const baseMonthlyLeads = scenarioData.monthlyLeads * seasonalMultiplier;
-    const monthlyLeads = Math.round(applyVariance(baseMonthlyLeads, state.variancePercent, state.enableVariance));
+    const leadsSeed = `${state.selectedScenario}-leads`;
+    const monthlyLeads = Math.round(applyVariance(baseMonthlyLeads, state.variancePercent, state.enableVariance, leadsSeed, month, state.diligenceMode));
     const demos = Math.round(monthlyLeads * scenarioData.leadToDemo);
     const newB2BClients = Math.round(demos * scenarioData.demoToPaid);
     
