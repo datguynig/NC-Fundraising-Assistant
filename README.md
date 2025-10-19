@@ -2,6 +2,45 @@
 
 Interactive fundraising and financial planning UI for NewComma. This React + TypeScript component models revenue, costs, dilution, and runway across scenarios to help you plan a raise and present investor-ready projections.
 
+## What this app is and why it exists
+- **Purpose**: Give founders and teams a fast, credible way to model 36 months of the business and turn that into clear fundraising and operating decisions.
+- **Who it's for**: NewComma founders, operators, and advisors preparing board updates, investor materials, hiring plans, or cash runway strategies.
+- **Problems it solves**:
+  - Translates assumptions into a full monthly projection without spreadsheets
+  - Compares Conservative/Base/Growth scenarios side-by-side
+  - Quantifies dilution, post-money, and investor ROI at different exits
+  - Surfaces cash runway risks early with an alert and a "Plan Raise" workflow
+
+## What decisions it helps you make
+- **When to start fundraising**: Uses runway math with a 3-6 month fundraising timeline baked into guidance
+- **How much to raise**: Balance dilution vs. months of runway and milestones
+- **Pricing and go-to-market tradeoffs**: See LTV, CAC, payback under different conversion/pricing assumptions
+- **Hiring pacing**: Sales/support headcount scale with leads and users to avoid over-hiring
+- **Scenario planning**: Sanity-check the spread between worst/base/best to set credible expectations
+
+## How it works at a glance
+- A single component `FinancialModel` manages state via a reducer and computes projections with `modelLogic.ts`
+- Projections produce monthly rows with revenue, costs, cash, and unit economics for 36 months
+- Tabs render focused slices (Overview, Revenue, Expenses, Unit Economics, Raise, Analysis, Scenarios, Settings)
+- Charts are rendered with Recharts; UI uses Tailwind
+
+## Data model and assumptions (high level)
+- **Revenue engines**: Creative memberships, B2B SaaS tiers, Marketplace (listings, fees, credits)
+- **Conversion & churn**: Annual churn converted to monthly; B2B funnel (leads → demos → paid) drives client adds
+- **Costs**: Team base + capacity-based sales/support, marketing, tools/infra (with growth), outsourced, events
+- **Cash collection**: 98% recurring, 90% transaction to reflect payment failures/chargebacks
+- **Runway**: Uses trailing average burn to avoid single-month spikes; raise injects cash on the selected month
+
+## What it is not
+- A full accounting system or multi-round cap table manager
+- A forecasting engine with historical actuals import and reconciliation (basic toggles only)
+- A scenario versioning/snapshot tool (single working set of assumptions)
+
+## Responsible use and caveats
+- Treat outputs as directional, not precise forecasts; validate with your own historicals
+- Keep Base Case conservative and defendable; show Growth only as upside
+- Start fundraising when Conservative runway hits 9–12 months to avoid last-minute risk
+
 ## Highlights
 - Scenario planning: Conservative, Base, Growth
 - Revenue modeling: B2B SaaS, Creative memberships, Marketplace fees, Credits
