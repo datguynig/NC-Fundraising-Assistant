@@ -19,6 +19,14 @@ Interactive fundraising and financial planning UI for NewComma. This React + Typ
 - TypeScript 5+
 - Tailwind CSS (recommended)
 
+- Recharts 2.x (charts)
+
+Install charts dependency if your app doesn't already have it:
+
+```bash
+npm install recharts
+```
+
 ### 2) Add the component to your app
 Copy the `src/components/FinancialModel` folder (and the `newcomma-model-v3-1.tsx` re-export) into your app, then import it:
 
@@ -77,7 +85,7 @@ These documents explain the business logic, expected ranges/benchmarks, and how 
 
 ## Development notes
 - Tech: React + TypeScript, Tailwind CSS
-- No external charting dependency is required; views render directly with React and Tailwind.
+- Charts use Recharts; ensure `recharts` is installed.
 - If you plan to extend calculations, start with `modelLogic.ts`, `modelReducer.ts`, and the shapes in `types.ts`.
 - To change pricing, scenarios, or cost assumptions, edit `constants.ts`.
 
@@ -91,6 +99,8 @@ These documents explain the business logic, expected ranges/benchmarks, and how 
 ## Version
 - Model: v3.1 (UI heading reflects this)
 - Last updated: October 2025
+
+Note: Some bundled docs reference v3.0; functionality and guidance still apply to v3.1.
 
 ## Support
 - If numbers look off, compare with `v3-validation-checklist.md`
