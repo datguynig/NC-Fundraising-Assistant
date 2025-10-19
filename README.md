@@ -1,2 +1,146 @@
-# NC-Fundraising-Assistant
-Fundraising tool for NewComma
+# NewComma Financial Model v3.1
+
+Interactive fundraising and financial planning UI for NewComma. This React + TypeScript component models revenue, costs, dilution, and runway across scenarios to help you plan a raise and present investor-ready projections.
+
+## What this app is and why it exists
+- **Purpose**: Give founders and teams a fast, credible way to model 36 months of the business and turn that into clear fundraising and operating decisions.
+- **Who it's for**: NewComma founders, operators, and advisors preparing board updates, investor materials, hiring plans, or cash runway strategies.
+- **Problems it solves**:
+  - Translates assumptions into a full monthly projection without spreadsheets
+  - Compares Conservative/Base/Growth scenarios side-by-side
+  - Quantifies dilution, post-money, and investor ROI at different exits
+  - Surfaces cash runway risks early with an alert and a "Plan Raise" workflow
+
+## What decisions it helps you make
+- **When to start fundraising**: Uses runway math with a 3-6 month fundraising timeline baked into guidance
+- **How much to raise**: Balance dilution vs. months of runway and milestones
+- **Pricing and go-to-market tradeoffs**: See LTV, CAC, payback under different conversion/pricing assumptions
+- **Hiring pacing**: Sales/support headcount scale with leads and users to avoid over-hiring
+- **Scenario planning**: Sanity-check the spread between worst/base/best to set credible expectations
+
+## How it works at a glance
+- A single component `FinancialModel` manages state via a reducer and computes projections with `modelLogic.ts`
+- Projections produce monthly rows with revenue, costs, cash, and unit economics for 36 months
+- Tabs render focused slices (Overview, Revenue, Expenses, Unit Economics, Raise, Analysis, Scenarios, Settings)
+- Charts are rendered with Recharts; UI uses Tailwind
+
+## Data model and assumptions (high level)
+- **Revenue engines**: Creative memberships, B2B SaaS tiers, Marketplace (listings, fees, credits)
+- **Conversion & churn**: Annual churn converted to monthly; B2B funnel (leads → demos → paid) drives client adds
+- **Costs**: Team base + capacity-based sales/support, marketing, tools/infra (with growth), outsourced, events
+- **Cash collection**: 98% recurring, 90% transaction to reflect payment failures/chargebacks
+- **Runway**: Uses trailing average burn to avoid single-month spikes; raise injects cash on the selected month
+
+## What it is not
+- A full accounting system or multi-round cap table manager
+- A forecasting engine with historical actuals import and reconciliation (basic toggles only)
+- A scenario versioning/snapshot tool (single working set of assumptions)
+
+## Responsible use and caveats
+- Treat outputs as directional, not precise forecasts; validate with your own historicals
+- Keep Base Case conservative and defendable; show Growth only as upside
+- Start fundraising when Conservative runway hits 9–12 months to avoid last-minute risk
+
+## Highlights
+- Scenario planning: Conservative, Base, Growth
+- Revenue modeling: B2B SaaS, Creative memberships, Marketplace fees, Credits
+- Costs and runway: salaries, marketing, tools, and more with runway alerts
+- Fundraise planning: ARR multiple, pre/post-money, dilution, new shares
+- Investor ROI: exit multiple, exit year, payout and return multiple
+- Unit economics: CAC, LTV, LTV:CAC, payback period
+- Beautiful UI with Tailwind CSS
+
+## Quick start (embed in an existing React app)
+> This repository ships a self-contained UI component. Import it into your React app or monorepo. There’s no standalone dev server here.
+
+### 1) Requirements
+- React 18+
+- TypeScript 5+
+- Tailwind CSS (recommended)
+
+- Recharts 2.x (charts)
+
+Install charts dependency if your app doesn't already have it:
+
+```bash
+npm install recharts
+```
+
+### 2) Add the component to your app
+Copy the `src/components/FinancialModel` folder (and the `newcomma-model-v3-1.tsx` re-export) into your app, then import it:
+
+```tsx
+// e.g. app/page.tsx or src/App.tsx
+import FinancialModel from "./newcomma-model-v3-1";
+
+export default function App() {
+  return <FinancialModel />;
+}
+```
+
+### 3) Styling
+The UI uses Tailwind utility classes. Ensure your app has Tailwind set up. See Tailwind’s installation guide: `https://tailwindcss.com/docs/installation`.
+
+If you’re not using Tailwind, the component will render but won’t be styled as intended.
+
+## Configuration
+Most defaults live in `src/components/FinancialModel/constants.ts`.
+- `CURRENCY` (default `GBP`)
+- `DEFAULT_CURRENT_DATE`, `DEFAULT_RAISE_DATE`, `DEFAULT_ARR_MULTIPLE`
+- `DEFAULT_SCENARIOS` (Conservative/Base/Growth inputs)
+- `PRICING` (creative plans, B2B tiers, marketplace fees)
+- `COST_STRUCTURE` (salaries, tools, marketing, collections)
+- `ARR_MULTIPLE_GUIDANCE` (helper guidance for valuation multiples)
+
+Current version exposes configuration via editing constants; the `FinancialModel` component does not yet accept props for these. If you need runtime configuration, consider wiring props through and threading them into the reducer/logic files noted below.
+
+## What you’ll see in the UI
+- Tabs: Overview, Revenue, Expenses, Unit Economics, Raise, Analysis, Scenarios, Settings
+- Scenario switching: buttons for Conservative, Base Case, Growth
+- Runway alert: highlights short runway with a CTA to plan a raise
+- Raise tab: pre/post-money, dilution, new shares, plus Investor ROI
+
+## Project structure
+```
+newcomma-model-v3-1.tsx             # Re-exports the FinancialModel component
+src/components/FinancialModel/
+  FinancialModel.tsx                # Main component (tabs, layout, state)
+  modelReducer.ts                   # App state + actions
+  modelLogic.ts                     # Core monthly projection math
+  types.ts                          # Strong TypeScript models for projections
+  helpers.ts                        # Utility functions (formatting, variance, dates)
+  constants.ts                      # Defaults: currency, scenarios, pricing, costs, etc.
+  views/                            # UI for each tab (Overview/Revenue/Expenses/...)
+```
+
+## Documentation
+- User Guide: `./v3-user-guide.md`
+- Quick Reference: `./v3-quick-reference.md`
+- Validation Checklist: `./v3-validation-checklist.md`
+- Deployment Summary: `./v3-deployment-summary.md`
+- Scenarios Playbook: `./scenarios-playbook.md`
+
+These documents explain the business logic, expected ranges/benchmarks, and how to present results to stakeholders and investors.
+
+## Development notes
+- Tech: React + TypeScript, Tailwind CSS
+- Charts use Recharts; ensure `recharts` is installed.
+- If you plan to extend calculations, start with `modelLogic.ts`, `modelReducer.ts`, and the shapes in `types.ts`.
+- To change pricing, scenarios, or cost assumptions, edit `constants.ts`.
+
+## Roadmap ideas
+- Multiple funding rounds
+- Seasonality toggles and controls in the UI
+- Cohort retention analysis
+- CSV export and scenario snapshots
+- Sensitivity analysis tooling
+
+## Version
+- Model: v3.1 (UI heading reflects this)
+- Last updated: October 2025
+
+Note: Some bundled docs reference v3.0; functionality and guidance still apply to v3.1.
+
+## Support
+- If numbers look off, compare with `v3-validation-checklist.md`
+- For usage questions, see `v3-user-guide.md`
